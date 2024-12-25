@@ -45,9 +45,9 @@ from bpy_extras.io_utils import (
 
 
 @orientation_helper(axis_forward='-Z', axis_up='Y')
-class ImportFBX(bpy.types.Operator, ImportHelper):
+class ImportVizorFBX(bpy.types.Operator, ImportHelper):
     """Load a FBX file"""
-    bl_idname = "import_scene.fbx"
+    bl_idname = "import_scene.vizor_fbx"
     bl_label = "Import FBX(@MikhailLebedev)"
     bl_options = {'UNDO', 'PRESET'}
 
@@ -287,9 +287,9 @@ def import_panel_armature(layout, operator):
 
 
 @orientation_helper(axis_forward='-Z', axis_up='Y')
-class ExportFBX(bpy.types.Operator, ExportHelper):
+class ExportVizorFBX(bpy.types.Operator, ExportHelper):
     """Write a FBX file"""
-    bl_idname = "export_scene.fbx"
+    bl_idname = "export_scene.vizor_fbx"
     bl_label = "Export FBX(@MikhailLebedev)"
     bl_options = {'UNDO', 'PRESET'}
 
@@ -687,11 +687,11 @@ def export_panel_animation(layout, operator):
         body.prop(operator, "bake_anim_simplify_factor")
 
 
-class IO_FH_fbx(bpy.types.FileHandler):
-    bl_idname = "IO_FH_fbx"
-    bl_label = "FBX"
-    bl_import_operator = "import_scene.fbx"
-    bl_export_operator = "export_scene.fbx"
+class IO_FH_Vizor_fbx(bpy.types.FileHandler):
+    bl_idname = "IO_FH_Vizor_fbx"
+    bl_label = "VizorFBX"
+    bl_import_operator = "import_scene.vizor_fbx"
+    bl_export_operator = "export_scene.vizor_fbx"
     bl_file_extensions = ".fbx"
 
     @classmethod
@@ -700,17 +700,17 @@ class IO_FH_fbx(bpy.types.FileHandler):
 
 
 def menu_func_import(self, context):
-    self.layout.operator(ImportFBX.bl_idname, text="FBX @MikhailLebedev (.fbx)")
+    self.layout.operator(ImportVizorFBX.bl_idname, text="FBX @MikhailLebedev (.fbx)")
 
 
 def menu_func_export(self, context):
-    self.layout.operator(ExportFBX.bl_idname, text="FBX @MikhailLebedev (.fbx)")
+    self.layout.operator(ExportVizorFBX.bl_idname, text="FBX @MikhailLebedev (.fbx)")
 
 
 classes = (
-    ImportFBX,
-    ExportFBX,
-    IO_FH_fbx,
+    ImportVizorFBX,
+    ExportVizorFBX,
+    IO_FH_Vizor_fbx,
 )
 
 
