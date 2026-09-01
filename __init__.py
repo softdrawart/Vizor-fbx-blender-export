@@ -43,6 +43,8 @@ from bpy_extras.io_utils import (
     poll_file_object_drop,
 )
 
+from . import export_actions_fbx, clean_model_tools
+
 
 @orientation_helper(axis_forward='-Z', axis_up='Y')
 class ImportVizorFBX(bpy.types.Operator, ImportHelper):
@@ -720,11 +722,16 @@ def register():
 
     bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
     bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
+    export_actions_fbx.register()
+    clean_model_tools.register()
 
 
 def unregister():
     bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
     bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
+
+    export_actions_fbx.unregister()
+    clean_model_tools.unregister()
 
     for cls in classes:
         bpy.utils.unregister_class(cls)
