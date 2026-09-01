@@ -43,7 +43,17 @@ from bpy_extras.io_utils import (
     poll_file_object_drop,
 )
 
-from . import export_actions_fbx, clean_model_tools
+from . import animation_cleaner, export_actions_fbx, clean_model_tools
+
+if "animation_cleaner" in locals():
+    import importlib
+    importlib.reload(animation_cleaner)
+if "export_actions_fbx" in locals():
+    import importlib
+    importlib.reload(export_actions_fbx)
+if "clean_model_tools" in locals():
+    import importlib
+    importlib.reload(clean_model_tools)
 
 
 @orientation_helper(axis_forward='-Z', axis_up='Y')
@@ -724,6 +734,7 @@ def register():
     bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
     export_actions_fbx.register()
     clean_model_tools.register()
+    animation_cleaner.register()
 
 
 def unregister():
@@ -732,6 +743,7 @@ def unregister():
 
     export_actions_fbx.unregister()
     clean_model_tools.unregister()
+    animation_cleaner.unregister()
 
     for cls in classes:
         bpy.utils.unregister_class(cls)

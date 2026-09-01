@@ -41,6 +41,15 @@ def _remove_faulty_fcurves(armature, action):
             removed_count += 1
     return removed_count
 
+
+def _build_nla_track_name(model_name, track_name):
+    model_name = model_name if model_name else ""
+    if not model_name in track_name:
+        full_track_name = model_name + "_" + track_name
+    else:
+        full_track_name = track_name
+    return "".join([c for c in full_track_name if c.isalnum() or c in ('_')]).rstrip()
+
 # -------------------------------------------------------------------------
 # UI Panel
 # -------------------------------------------------------------------------
@@ -60,7 +69,8 @@ class VIEW3D_PT_game_dev_animation(bpy.types.Panel):
         box = layout.box()
         box.label(text="Animation Cleaner", icon='ACTION')
         col = box.column(align=True)
-        op = col.operator(ANIMATION_OT_clean_nla_actions.bl_idname, icon='ACTION')
+        col.operator(ANIMATION_OT_clean_nla_actions.bl_idname, icon='ACTION')
+        col.operator(ANIMATION_OT_rename_nla_strip_names.bl_idname, icon='SORTALPHA')
  
 # -------------------------------------------------------------------------
 # Operators
@@ -125,7 +135,41 @@ class ANIMATION_OT_clean_nla_actions(bpy.types.Operator):
         return {'FINISHED'}
 
 
-classes = (ANIMATION_OT_clean_nla_actions, VIEW3D_PT_game_dev_animation)
+class ANIMATION_OT_rename_nla_strip_names(bpy.types.Operator):
+    """Rename every NLA strip on selected armatures using the model prefix and track name."""
+
+    bl_idname = "animation.rename_nla_strip_names"
+    bl_label = "Rename NLA Strip Names"
+    bl_options = {'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        return any(obj.type == 'ARMATURE' for obj in context.selected_objects)
+
+    def execute(self, context):
+        armatures = [obj for obj in context.selected_objects if obj.type == 'ARMATURE']
+        renamed_count = 0
+        model_name = getattr(context.scene, "vizor_fbx_model_name", "") or ""
+
+        for armature in armatures:
+            if not armature.animation_data or not armature.animation_data.nla_tracks:
+                continue
+
+            for track in armature.animation_data.nla_tracks:
+                if not track.strips:
+                    continue
+
+                full_track_name = _build_nla_track_name(model_name, track.name)
+                for strip in track.strips:
+                    if strip.name != full_track_name:
+                        strip.name = full_track_name
+                        renamed_count += 1
+
+        self.report({'INFO'}, f"Renamed {renamed_count} NLA strips")
+        return {'FINISHED'}
+
+
+classes = (ANIMATION_OT_clean_nla_actions, ANIMATION_OT_rename_nla_strip_names, VIEW3D_PT_game_dev_animation)
 
 
 def register():
