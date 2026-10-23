@@ -732,22 +732,53 @@ class EXPORT_OT_vizor_npc_model_only(bpy.types.Operator):
             arm.select_set(True)
             for m in meshes: m.select_set(True)
             context.view_layer.objects.active = arm
-            model_name = context.scene.vizor_fbx_model_name if context.scene.vizor_fbx_model_name else arm.name
 
-            model_path = os.path.join(export_path, f"{model_name}.fbx")
+            model_name = context.scene.vizor_fbx_model_name if context.scene.vizor_fbx_model_name else arm.name
+                        
+            safe_name = "".join([c for c in model_name if c.isalnum() or c in ('_')]).rstrip()
+            model_path = os.path.join(export_path, f"{safe_name}.fbx")
 
             # Using your specific vizor_fbx settings
             bpy.ops.export_scene.vizor_fbx(
-                filepath=model_path,
-                use_selection=True,
-                object_types={'MESH', 'ARMATURE'},
-                global_scale=1.0, # Adjust as per your GLOBAL_SCALE variable
-                bake_anim=False, 
-                armature_nodetype='REMOVE_GHOST',
-                use_armature_deform_only=True,
-                axis_forward='Y',
-                axis_up='Z'
-            )
+                            filepath=model_path,
+                            use_selection=True,
+                            use_visible=False,
+                            use_active_collection=False,
+                            global_scale=GLOBAL_SCALE,
+                            apply_unit_scale=False,
+                            apply_scale_options='FBX_SCALE_UNITS',
+                            use_space_transform=False,
+                            bake_space_transform=False,
+                            object_types={'MESH', 'ARMATURE'},
+                            use_mesh_modifiers=True,
+                            use_mesh_modifiers_render=True,
+                            mesh_smooth_type='OFF',
+                            colors_type='SRGB',
+                            prioritize_active_color=False,
+                            use_subsurf=False,
+                            use_mesh_edges=False,
+                            use_tspace=False,
+                            use_triangles=False,
+                            use_custom_props=False,
+                            add_leaf_bones=False,
+                            primary_bone_axis='Y',
+                            secondary_bone_axis='X',
+                            use_armature_deform_only=True,
+                            armature_nodetype='REMOVE_GHOST',
+                            bake_anim=False,
+                            bake_anim_use_all_bones=True,
+                            bake_anim_use_nla_strips=True,
+                            bake_anim_use_all_actions=True,
+                            bake_anim_force_startend_keying=True,
+                            bake_anim_step=1.0,
+                            bake_anim_simplify_factor=1.0,
+                            path_mode='AUTO',
+                            embed_textures=False,
+                            batch_mode='OFF',
+                            use_batch_own_dir=True,
+                            axis_forward='Y',
+                            axis_up='Z'
+                        )
             self.report({'INFO'}, f"Model exported to: {model_path}")
 
         finally:
@@ -810,9 +841,14 @@ class EXPORT_OT_vizor_npc_active_anim(bpy.types.Operator):
             start_f = min(s.frame_start for s in active_track.strips)
             end_f = max(s.frame_end for s in active_track.strips)
             context.scene.frame_start, context.scene.frame_end = int(start_f), int(end_f)
-            
+
             # Clean filename
-            safe_name = "".join([c for c in active_track.name if c.isalnum() or c in (' ', '.', '_')]).rstrip()
+            model_name = context.scene.vizor_fbx_model_name if context.scene.vizor_fbx_model_name else ""
+            if not model_name in active_track.name:
+                full_track_name = model_name + "_" + active_track.name
+            else:
+                full_track_name = active_track.name
+            safe_name = "".join([c for c in full_track_name if c.isalnum() or c in ('_')]).rstrip()
             anim_path = os.path.join(export_path, f"{safe_name}.fbx")
 
             # Selection: Armature Only
@@ -820,18 +856,45 @@ class EXPORT_OT_vizor_npc_active_anim(bpy.types.Operator):
             arm.select_set(True)
 
             bpy.ops.export_scene.vizor_fbx(
-                filepath=anim_path,
-                use_selection=True,
-                object_types={'ARMATURE'},
-                global_scale=1.0, # Adjust as per your GLOBAL_SCALE variable
-                bake_anim=True,
-                bake_anim_use_nla_strips=True,
-                bake_anim_use_all_actions=False,
-                armature_nodetype='REMOVE_GHOST',
-                use_armature_deform_only=True,
-                axis_forward='Y',
-                axis_up='Z'
-            )
+                                    filepath=anim_path,
+                                    use_selection=True,
+                                    use_visible=False,
+                                    use_active_collection=False,
+                                    global_scale=GLOBAL_SCALE,
+                                    apply_unit_scale=False,
+                                    apply_scale_options='FBX_SCALE_UNITS',
+                                    use_space_transform=False,
+                                    bake_space_transform=False,
+                                    object_types={'ARMATURE'},
+                                    use_mesh_modifiers=True,
+                                    use_mesh_modifiers_render=True,
+                                    mesh_smooth_type='OFF',
+                                    colors_type='SRGB',
+                                    prioritize_active_color=False,
+                                    use_subsurf=False,
+                                    use_mesh_edges=False,
+                                    use_tspace=False,
+                                    use_triangles=False,
+                                    use_custom_props=False,
+                                    add_leaf_bones=False,
+                                    primary_bone_axis='Y',
+                                    secondary_bone_axis='X',
+                                    use_armature_deform_only=True,
+                                    armature_nodetype='REMOVE_GHOST',
+                                    bake_anim=True,
+                                    bake_anim_use_all_bones=True,
+                                    bake_anim_use_nla_strips=False,
+                                    bake_anim_use_all_actions=False,
+                                    bake_anim_force_startend_keying=True,
+                                    bake_anim_step=1.0,
+                                    bake_anim_simplify_factor=0.0,
+                                    path_mode='AUTO',
+                                    embed_textures=False,
+                                    batch_mode='OFF',
+                                    use_batch_own_dir=True,
+                                    axis_forward='Y',
+                                    axis_up='Z'
+                                )
             self.report({'INFO'}, f"Animation exported: {safe_name}")
 
         finally:
