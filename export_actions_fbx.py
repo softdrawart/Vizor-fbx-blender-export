@@ -8,6 +8,8 @@ bl_info = {
     "category": "Import-Export",
 }
 
+from tabnanny import check
+
 import bpy
 import os
 
@@ -20,6 +22,10 @@ def update_global_scale(self, context):
 def update_max_meshes(self, context):
     global MAX_ALLOWED_MESHES
     MAX_ALLOWED_MESHES = self.vizor_max_meshes
+
+def check_safe_name(name):
+    """Sanitize a name to be safe for filenames."""
+    return "".join([c for c in name if c.isalnum() or c in (' ', '.', '_')]).rstrip().lower()
 
 # -------------------------------------------------------------------------
 # UI Panel
@@ -103,7 +109,7 @@ class EXPORT_OT_vizor_model(bpy.types.Operator):
             return {'CANCELLED'}
 
         export_path = bpy.path.abspath(context.scene.export_path)
-        file_path = os.path.join(export_path, naming_obj.name + "_Model.fbx")
+        file_path = check_safe_name(os.path.join(export_path, naming_obj.name + "_Model.fbx"))
 
         # Settings from mob_clon2.py
         bpy.ops.export_scene.vizor_fbx(
@@ -194,7 +200,7 @@ class EXPORT_OT_vizor_nla_separate(bpy.types.Operator):
             end_f = max(s.frame_end for s in track.strips)
             context.scene.frame_start, context.scene.frame_end = int(start_f), int(end_f)
             
-            file_name = "".join([c for c in track.name if c.isalnum() or c in (' ', '.', '_')]).rstrip()
+            file_name = check_safe_name(track.name)
             file_path = os.path.join(export_path, file_name + ".fbx")
 
             # Settings from my_HH_export_animation.py
@@ -267,7 +273,7 @@ class EXPORT_OT_vizor_full_mesh_anim(bpy.types.Operator):
             return {'CANCELLED'}
 
         export_path = bpy.path.abspath(context.scene.export_path)
-        file_path = os.path.join(export_path, naming_obj.name + "_Full.fbx")
+        file_path = check_safe_name(os.path.join(export_path, naming_obj.name + "_Full.fbx"))
 
         # 1. STORE EXISTING MUTE STATES
         state_backup = []
@@ -366,7 +372,7 @@ class EXPORT_OT_vizor_active_nla_mesh(bpy.types.Operator):
             return {'CANCELLED'}
 
         export_path = bpy.path.abspath(context.scene.export_path)
-        file_path = os.path.join(export_path, active_track.name + ".fbx")
+        file_path = check_safe_name(os.path.join(export_path, active_track.name + ".fbx"))
 
         # Sync frame range to track
         orig_start, orig_end = context.scene.frame_start, context.scene.frame_end
@@ -460,7 +466,7 @@ class EXPORT_OT_vizor_npc_combined(bpy.types.Operator):
 
             model_name = context.scene.vizor_fbx_model_name if context.scene.vizor_fbx_model_name else arm.name
             
-            safe_name = "".join([c for c in model_name if c.isalnum() or c in ('_')]).rstrip()
+            safe_name = check_safe_name(model_name)
             model_path = os.path.join(export_path, f"{safe_name}.fbx")
 
             bpy.ops.export_scene.vizor_fbx(
@@ -533,7 +539,7 @@ class EXPORT_OT_vizor_npc_combined(bpy.types.Operator):
                         full_track_name = model_name + "_" + track.name
                     else:
                         full_track_name = track.name
-                    safe_name = "".join([c for c in full_track_name if c.isalnum() or c in ('_')]).rstrip()
+                    safe_name = check_safe_name(full_track_name)
                     anim_path = os.path.join(export_path, f"{safe_name}.fbx")
 
                     bpy.ops.export_scene.vizor_fbx(
@@ -848,7 +854,7 @@ class EXPORT_OT_vizor_npc_active_anim(bpy.types.Operator):
                 full_track_name = model_name + "_" + active_track.name
             else:
                 full_track_name = active_track.name
-            safe_name = "".join([c for c in full_track_name if c.isalnum() or c in ('_')]).rstrip()
+            safe_name = check_safe_name(full_track_name)
             anim_path = os.path.join(export_path, f"{safe_name}.fbx")
 
             # Selection: Armature Only
